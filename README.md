@@ -10,6 +10,7 @@ Simple Microservices Demo. A very simple system with a Customer and a Order serv
 3. Implement OrderService using a MSSSQL database. And using a domain service to check creditmax. The domain service uses a CustomerProxy (HttpClient) to talk to the CustomerService.
 4. Run in docker
 5. Add Https
+6. Add API Gateway - YARP
 
 
 
@@ -391,4 +392,210 @@ yml filen til at sætte certifikatet op.
 
 
 
-zzz
+### Chapter 6: Add API Gateway - YARP
+
+Branch: CH-06-After
+
+Instruktion: How To Build an API Gateway for Microservices with YARP https://www.youtube.com/watch?v=UidT7YYu97s&t=52s
+
+Og: https://microsoft.github.io/reverse-proxy/articles/getting-started.html
+
+Add new solution folder: ApiGateway
+
+Add new project: ASP.NET Core Web API - projectname: Gateway.Api
+
+Location: SimpleMicroservicesDemo\src\ApiGateway
+
+Add docker orchestration support
+
+Add YARP (nuget)
+
+Gateway.Api.csproj indeholder nu:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>4a3796f8-74cc-47d2-b406-3b23ee9ccd26</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext><DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <PackageReference Include="Yarp.ReverseProxy" Version="2.2.0" />
+  </ItemGroup>
+
+</Project>
+```
+
+
+
+Tilret Program.cs:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+var app = builder.Build();
+app.MapReverseProxy();
+app.Run();
+```
+
+Tilret appsettings.json
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ReverseProxy": {
+    "Routes": {
+      "customers-route": {
+        "ClusterId": "customers-cluster",
+        "Match": {
+          "Path": "/customers/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "{**catch-all}"
+          }
+        ]
+      },
+      "orders-route": {
+        "ClusterId": "orders-cluster",
+        "Match": {
+          "Path": "/orders/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "{**catch-all}"
+          }
+        ]
+      }
+    },
+    "Clusters": {
+      "customers-cluster": {
+        "Destinations": {
+          "destination1": {
+            "Address": "http://customerservice.api:8080"
+          }
+        }
+      }
+    },
+    "orders-cluster": {
+      "Destinations": {
+        "destination1": {
+          "Address": "http://orderservice.api:8080"
+        }
+      }
+    }
+
+  }
+}
+```
+
+
+
+Ny docker compose:
+
+
+
+```yaml
+services:
+  customerservice.api:
+    image: ${DOCKER_REGISTRY-}customerserviceapi
+    build:
+      context: .
+      dockerfile: CustomerService/CustomerService.Api/Dockerfile
+
+  orderservice.api:
+    image: ${DOCKER_REGISTRY-}orderserviceapi
+    build:
+      context: .
+      dockerfile: OrderService/OrderService.Api/Dockerfile
+
+  mssql:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+
+
+  gateway.api:
+    image: ${DOCKER_REGISTRY-}gatewayapi
+    build:
+      context: .
+      dockerfile: ApiGateway/Gateway.Api/Dockerfile
+
+
+```
+
+
+
+```yaml
+services:
+  customerservice.api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: 8080
+      ASPNETCORE_HTTPS_PORTS: 8081
+      "ConnectionStrings:CustomerDbConnection": "Server=mssql;Database=CustomerDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true"
+    ports:
+      - "18080:8080"
+      - "18081:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - mssql
+  
+  orderservice.api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: 8080
+      ASPNETCORE_HTTPS_PORTS: 8081
+      "ConnectionStrings:OrderDbConnection": "Server=mssql;Database=OrderDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true"
+      "ExternalServices:Customer:Uri": "http://customerservice.api:8080"
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
+      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+    ports:
+      - "28080:8080"
+      - "28081:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - mssql
+
+  mssql:
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Password1234!"
+    ports:
+      - 11433:1433 
+
+  gateway.api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: 8080
+      ASPNETCORE_HTTPS_PORTS: 8081
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
+      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+    ports:
+      - "38080:8080"
+      - "38081:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+```
+
+
+

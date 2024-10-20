@@ -14,3 +14,10 @@ services:
   mssql:
     image: "mcr.microsoft.com/mssql/server:2019-latest"
 
+
+  gateway.api:
+    image: ${DOCKER_REGISTRY-}gatewayapi
+    build:
+      context: .
+      dockerfile: ApiGateway/Gateway.Api/Dockerfile
+
