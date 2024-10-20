@@ -9,6 +9,7 @@ Simple Microservices Demo. A very simple system with a Customer and a Order serv
 2. Implement CustomerService using a MSSSQL database with seeded data
 3. Implement OrderService using a MSSSQL database. And using a domain service to check creditmax. The domain service uses a CustomerProxy (HttpClient) to talk to the CustomerService.
 4. Run in docker
+5. Add Https
 
 
 
@@ -350,3 +351,44 @@ services:
 
 ```
 
+### Chapter 5: Add Https.
+
+Branch: CH-05-After
+
+Opret folderen: 
+
+```powershell
+C:\Users\%USERPROFILE%\.aspnet\https
+```
+
+Hvor du erstatter %USERPROFILE% med dit lokale brugernavn  - f.eks. kbr8776
+
+Fra: https://www.yogihosting.com/docker-compose-aspnet-core/#generate
+
+```powershell
+dotnet dev-certs https -ep %USERPROFILE%\.aspnet\https\aspnetapp.pfx -p mypass123
+```
+
+Hvor du erstatter %USERPROFILE% med dit lokale brugernavn  - f.eks. kbr8776
+
+```powershell
+dotnet dev-certs https --trust
+```
+
+Denne efterfølgende del er ikke nødvendig,vi bruger docker-compose.
+yml filen til at sætte certifikatet op.
+
+*Opret folderen https i både CustomerService.Api og OrderService.Api projekterne.*
+
+*Kopier filerne fra %USERPROFILE%\.aspnet\https til de to projekter.*
+
+*I docker-compose.yml filen tilføjes:*
+```yaml
+    environment:
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+```
+
+
+
+zzz
