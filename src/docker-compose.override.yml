@@ -39,3 +39,18 @@ services:
       SA_PASSWORD: "Password1234!"
     ports:
       - 11433:1433 
+
+  gateway.api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: 8080
+      ASPNETCORE_HTTPS_PORTS: 8081
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
+      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+    ports:
+      - "38080:8080"
+      - "38081:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      # - ./ApiGateway/Gateway.Api/https/aspnetapp.pfx:/https/aspnetapp.pfx:ro
