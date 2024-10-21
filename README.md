@@ -9,8 +9,7 @@ Simple Microservices Demo. A very simple system with a Customer and a Order serv
 2. Implement CustomerService using a MSSSQL database with seeded data
 3. Implement OrderService using a MSSSQL database. And using a domain service to check creditmax. The domain service uses a CustomerProxy (HttpClient) to talk to the CustomerService.
 4. Run in docker
-5. Add Https
-6. Add API Gateway - YARP
+5. Add API Gateway - YARP
 
 
 
@@ -352,49 +351,13 @@ services:
 
 ```
 
-### Chapter 5: Add Https.
+
+
+
+
+### Chapter 5: Add API Gateway - YARP
 
 Branch: CH-05-After
-
-Opret folderen: 
-
-```powershell
-C:\Users\%USERPROFILE%\.aspnet\https
-```
-
-Hvor du erstatter %USERPROFILE% med dit lokale brugernavn  - f.eks. kbr8776
-
-Fra: https://www.yogihosting.com/docker-compose-aspnet-core/#generate
-
-```powershell
-dotnet dev-certs https -ep %USERPROFILE%\.aspnet\https\aspnetapp.pfx -p mypass123
-```
-
-Hvor du erstatter %USERPROFILE% med dit lokale brugernavn  - f.eks. kbr8776
-
-```powershell
-dotnet dev-certs https --trust
-```
-
-Denne efterfølgende del er ikke nødvendig,vi bruger docker-compose.
-yml filen til at sætte certifikatet op.
-
-*Opret folderen https i både CustomerService.Api og OrderService.Api projekterne.*
-
-*Kopier filerne fra %USERPROFILE%\.aspnet\https til de to projekter.*
-
-*I docker-compose.yml filen tilføjes:*
-```yaml
-    environment:
-      ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
-      ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
-```
-
-
-
-### Chapter 6: Add API Gateway - YARP
-
-Branch: CH-06-After
 
 Instruktion: How To Build an API Gateway for Microservices with YARP https://www.youtube.com/watch?v=UidT7YYu97s&t=52s
 
@@ -563,8 +526,6 @@ services:
       ASPNETCORE_HTTPS_PORTS: 8081
       "ConnectionStrings:OrderDbConnection": "Server=mssql;Database=OrderDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true"
       "ExternalServices:Customer:Uri": "http://customerservice.api:8080"
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
-      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
     ports:
       - "28080:8080"
       - "28081:8081"
@@ -587,8 +548,6 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_HTTP_PORTS: 8080
       ASPNETCORE_HTTPS_PORTS: 8081
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
-      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
     ports:
       - "38080:8080"
       - "38081:8081"
