@@ -1,6 +1,6 @@
 ### Chapter 6: Add Https.
 
-
+Branch: CH-06-After
 
 ## Setup Docker certificate
 
@@ -244,7 +244,7 @@ public record OrderDto(
 
 ## Notes used in the process
 
-Branch: CH-06-After
+
 
 Se: https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-8.0&tabs=visual-studio%2Clinux-sles
 
