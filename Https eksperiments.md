@@ -1,6 +1,6 @@
-### Chapter 5: Add Https.
+### Chapter 6: Add Https.
 
-Branch: CH-05-After
+Branch: CH-06-After
 
 Se: https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-8.0&tabs=visual-studio%2Clinux-sles
 
