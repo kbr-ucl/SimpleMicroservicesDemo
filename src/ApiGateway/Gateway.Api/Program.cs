@@ -10,7 +10,7 @@ var app = builder.Build();
 //    app.UseSwaggerUI();
 //}
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection(); // OBS !!!
 
 app.MapReverseProxy();
 app.Run();

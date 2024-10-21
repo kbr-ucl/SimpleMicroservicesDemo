@@ -1,34 +1,36 @@
 services:
   customerservice.api:
     environment:
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ASPNETCORE_HTTP_PORTS: 8080
-      ASPNETCORE_HTTPS_PORTS: 8081
-      "ConnectionStrings:CustomerDbConnection": "Server=mssql;Database=CustomerDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true"
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__CustomerDbConnection=Server=mssql;Database=CustomerDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=1234
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dockercertifikat.pfx
     ports:
       - "18080:8080"
       - "18081:8081"
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      # - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
     depends_on:
       - mssql
   
   orderservice.api:
     environment:
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ASPNETCORE_HTTP_PORTS: 8080
-      ASPNETCORE_HTTPS_PORTS: 8081
-      "ConnectionStrings:OrderDbConnection": "Server=mssql;Database=OrderDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true"
-      "ExternalServices:Customer:Uri": "http://customerservice.api:8080"
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
-      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings:OrderDbConnection=Server=mssql;Database=OrderDb;User=sa;Password=Password1234!;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - ExternalServices__Customer__Uri=http://customerservice.api:8080
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=1234
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dockercertifikat.pfx
     ports:
       - "28080:8080"
       - "28081:8081"
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      # - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
     depends_on:
       - mssql
 
@@ -42,15 +44,14 @@ services:
 
   gateway.api:
     environment:
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ASPNETCORE_HTTP_PORTS: 8080
-      ASPNETCORE_HTTPS_PORTS: 8081
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: "mypass123"
-      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=1234
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dockercertifikat.pfx
     ports:
       - "38080:8080"
       - "38081:8081"
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-      # - ./ApiGateway/Gateway.Api/https/aspnetapp.pfx:/https/aspnetapp.pfx:ro
+      # - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro

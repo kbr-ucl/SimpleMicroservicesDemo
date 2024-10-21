@@ -12,7 +12,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 
-
 var app = builder.Build();
 SeedDatabase.UpdateDatabase(app.Services);
 
@@ -23,16 +22,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
-
+// app.UseHttpsRedirection(); // OBS !!!
 
 
 app.MapGet("/Customer/{id}", (int id, ICustomerQuery query) =>
 {
-var result = query.GetCustomer(id);
+    var result = query.GetCustomer(id);
     return result;
 });
 
 
 app.Run();
-
